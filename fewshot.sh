@@ -6,12 +6,11 @@ EXPERIMENT_DIR=/data/local/qiyuw/WSPAlign/experiments-fewshot-$DATE
 OUTPUT_DIR=$EXPERIMENT_DIR/fewshot
 
 DATA_DIR=/data/10/WSPAlign # path to your test files
-TRAIN_FILE=$DATA_DIR/ft_data
+TRAIN_FILE=$DATA_DIR/few_ft_data
 TEST_FILE=$DATA_DIR/test_data
 
 MODEL_TYPE=xlm-roberta # works for mbert, too
-MODEL_NAME=/data/10/WSPAlign/xlm-pt-ckp
-# MODEL_NAME=/data/10/WSPAlign/mbert-pt-ckp
+MODEL_NAME=qiyuw/WSPAlign-xlm-base # path to your model
 
 date
 hostname
@@ -53,4 +52,4 @@ python $PROJECT_DIR/run_spanpred.py \
 rm $OUTPUT_DIR/{lang}-{lr}-{bz}/checkpoint*
 rm $OUTPUT_DIR/{lang}-{lr}-{bz}/cached*
 " \
--p lang kftt deen enfr roen -p lr 1e-6 3e-6 1e-5 3e-5 -p bz 5 8 12 | simple_gpu_scheduler --gpus 2,3,4,5,6,7,8
+-p lang kftt deen enfr roen -p lr 1e-6 3e-6 1e-5 3e-5 -p bz 5 8 12 | simple_gpu_scheduler --gpus 0, 1, 2,3,4,5,6,7,8
