@@ -4,6 +4,9 @@ WSPAlign: Word Alignment Pre-training via Large-Scale Weakly Supervised Span Pre
 This repository includes the source codes of paper [WSPAlign: Word Alignment Pre-training via Large-Scale Weakly Supervised Span Prediction](https://aclanthology.org/2023.acl-long.621/).
 Part of the implementation is from [word_align](https://github.com/nttcslab-nlp/word_align).
 
+## Requirements
+Run `pip install -r requirements.txt` to install all the required packages.
+
 ## Model list
 | Model List| Description|
 |-------|-------|
