@@ -29,7 +29,7 @@ Construction of `Finetuning`, `Test` and `Evaluation` dataset can be found at [w
 
 Run `download_dataset.sh` to download all the above datasets.
 
-## Pre-train, finetune and evaluate
+## Pre-train and finetune
 You can do pre-train, finetune and evaluate by running the following scripts.
 ### Pre-train
 See [pretrain.sh](pretrain.sh) for details.
@@ -40,11 +40,7 @@ You can also use pre-traned model to directly do word alignment (zero-shot), see
 See [finetune.sh](finetune.sh), [fewshot.sh](fewshot.sh) for details.
 
 ### Evaluate
-After running `finetune.sh`, `fewshot.sh` or `zeroshot.sh`, you will get the predicted alignment stored in `[YOUR OUTPUT DIR]/nbest_predictions_.json`. (e.g., `/data/local/qiyuw/WSPAlign/experiments-zeroshot-2023-08-03/zeroshot/deen/nbest_predictions_.json`)
-
-Then run `cd evaluate` and `bash postprocess.sh [YOUR OUTPUT DIR]/nbest_predictions_.json [LANG] [TOKENIZER]`. The script will take care of the alignment transformation and evaluation. `[LANG]` can be chosen from `[deen, kftt, roen, enfr]`, and `[TOKENIZER]` can be chosen from `[BERT, ROBERTA]`.
-
-See [evaluate/postprocess.sh](evaluate/postprocess.sh) for details.
+Refer to [WSPAlign Inference](https://github.com/qiyuw/WSPAligner-inference) for details.
 
 ## License
 
