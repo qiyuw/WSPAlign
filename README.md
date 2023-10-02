@@ -26,9 +26,8 @@ Use our model checkpoints with [huggingface](https://huggingface.co/)
 |[qiyuw/wspalign_ft_data](https://huggingface.co/datasets/qiyuw/wspalign_ft_data) | Finetuning dataset|
 |[qiyuw/wspalign_few_ft_data](https://huggingface.co/datasets/qiyuw/wspalign_few_ft_data) | Few-shot fintuning dataset|
 |[qiyuw/wspalign_test_data](https://huggingface.co/datasets/qiyuw/wspalign_test_data)| Test dataset for evaluation|
-|[qiyuw/qiyuw/wspalign_acl2023_eval](https://huggingface.co/datasets/qiyuw/wspalign_acl2023_eval)|Evaluation data used in the paper|
 
-Construction of `Finetuning`, `Test` and `Evaluation` dataset can be found at [word_align](https://github.com/nttcslab-nlp/word_align).
+Construction of `Finetuning` and `Test` dataset can be found at [word_align](https://github.com/nttcslab-nlp/word_align).
 
 Run `download_dataset.sh` to download all the above datasets.
 
