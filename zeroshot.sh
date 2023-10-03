@@ -8,7 +8,7 @@ OUTPUT_DIR=$EXPERIMENT_DIR/zeroshot
 DATA_DIR=/data/10/WSPAlign # path to your test files
 TEST_FILE=$DATA_DIR/test_data
 
-MODEL_TYPE=xlm-roberta # works for mbert, too
+MODEL_TYPE=xlm-roberta # or mbert
 MODEL_NAME=qiyuw/WSPAlign-xlm-base # path to your model
 
 date

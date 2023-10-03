@@ -9,7 +9,7 @@ DATA_DIR=/data/10/WSPAlign # path to your test files
 TRAIN_FILE=$DATA_DIR/few_ft_data
 TEST_FILE=$DATA_DIR/test_data
 
-MODEL_TYPE=xlm-roberta # works for mbert, too
+MODEL_TYPE=xlm-roberta # or mbert
 MODEL_NAME=qiyuw/WSPAlign-xlm-base # path to your model
 
 date
@@ -43,7 +43,7 @@ python $PROJECT_DIR/run_spanpred.py \
     --data_dir $OUTPUT_DIR/{lang}-{lr}-{bz} \
     --output_dir $OUTPUT_DIR/{lang}-{lr}-{bz} \
     --overwrite_output_dir \
-    --save_steps 10000000 \ # don't save checkpoints
+    --save_steps 10000000 \
     --thread 4 2>&1 \
     --per_gpu_eval_batch_size 12 \
     --logging_steps 500 \

@@ -9,8 +9,9 @@ DATA_DIR=/data/10/WSPAlign # path to your test files
 TRAIN_FILE=$DATA_DIR/ft_data
 TEST_FILE=$DATA_DIR/test_data
 
-MODEL_TYPE=xlm-roberta # works for mbert, too
-MODEL_NAME=qiyuw/WSPAlign-xlm-base # path to your model
+# MODEL_TYPE=xlm-roberta
+MODEL_TYPE=mbert
+MODEL_NAME=qiyuw/WSPAlign-mbert-base # path to your model
 
 date
 hostname

@@ -8,7 +8,7 @@ DATA_DIR=/data/10/WSPAlign
 TRAIN_FILE=$DATA_DIR/train-6langs.json
 DEV_FILE=$DATA_DIR/kftt_dev.json
 
-MODEL_TYPE=xlm-roberta # works for mbert, too
+MODEL_TYPE=xlm-roberta # or mbert
 MODEL_NAME=xlm-roberta-base
 # MODEL_NAME=bert-base-multilingual-cased
 
