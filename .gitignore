@@ -3,3 +3,4 @@
 **/runs
 **/post_evaluate/*.json
 *.bidi_th
+.vscode
