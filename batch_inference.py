@@ -20,7 +20,7 @@ from multiprocessing import Pool
 from tqdm import tqdm
 from functools import partial
 from torch.utils.data import Dataset, DataLoader
-from datetime import time
+from datetime import datetime
 
 context_sep =' \u00b6 ' # use ' ¶ ' (pilcrow sign) for context separator
 language_tokenizer_map = {
@@ -84,13 +84,11 @@ def post_unflatten(batch_outputs):
         s += l
     return unflattened_predictions
 
-def get_tokenizer(args, src_text, tgt_text):
-    if args.src_tokenizer_lang and args.src_tokenizer_lang not in language_tokenizer_map:
+def get_tokenizer(src_lang, tgt_lang):
+    if src_lang not in language_tokenizer_map:
         raise ValueError("Language {} not supported by SpaCy tokenizer.".format(args.src_tokenizer_lang))
-    if args.tgt_tokenizer_lang and args.tgt_tokenizer_lang not in language_tokenizer_map:
+    if tgt_lang not in language_tokenizer_map:
         raise ValueError("Language {} not supported by SpaCy tokenizer.".format(args.tgt_tokenizer_lang))
-    src_lang = args.src_tokenizer_lang if args.src_tokenizer_lang else detect(src_text)
-    tgt_lang = args.tgt_tokenizer_lang if args.tgt_tokenizer_lang else detect(tgt_text)
     # special case for Chinese
     if src_lang in ['zh-cn', 'zh-tw']:
         src_lang = 'zh'
@@ -104,7 +102,7 @@ def get_tokenizer(args, src_text, tgt_text):
     tgt_tokenizer_to_load = language_tokenizer_map[tgt_lang]()
     src_tokenizer = src_tokenizer_to_load.tokenizer
     tgt_tokenizer = tgt_tokenizer_to_load.tokenizer
-    return src_tokenizer, tgt_tokenizer, src_lang, tgt_lang
+    return src_tokenizer, tgt_tokenizer
 
 def make_word_alignments_data(sent, tokenizer, context_sep=' \u00b6 '):
     words = tokenizer(sent)
@@ -142,7 +140,7 @@ def find_matching_word(src_pred, tgt_words):
             predicted_word_idx.append(i)
     return predicted_word_idx
 
-def bidirectional_align(inputs, threshold=0.1, force_bidirectional=False):
+def bidirectional_align(inputs, args):
     src_predictions, tgt_predictions, src_words, tgt_words = inputs
     src_to_tgt = {}
     for i, src_pred in enumerate(src_predictions):
@@ -162,8 +160,8 @@ def bidirectional_align(inputs, threshold=0.1, force_bidirectional=False):
             else:
                 continue
     # filter out word-pairs with low scores and unidirectional predictions
-    src_to_tgt = {k: v for k, v in src_to_tgt.items() if v[0] > threshold}
-    if force_bidirectional:
+    src_to_tgt = {k: v for k, v in src_to_tgt.items() if v[0] > args.threshold}
+    if args.force_bidirectional:
         src_to_tgt = {k: v for k, v in src_to_tgt.items() if v[1] > 1}
     return src_to_tgt
 
@@ -217,7 +215,8 @@ def batch_align(pipe, src_text, tgt_text, src_tokenizer, tgt_tokenizer, args):
 
     # parallelize postprocessing
     assert len(src_predictions) == len(tgt_predictions) == len(src_words) == len(tgt_words), "src_predictions, tgt_predictions, src_words, tgt_words must have the same length"
-    i_res_align = p.imap(bidirectional_align, zip(src_predictions, tgt_predictions, src_words, tgt_words), len(src_text)//args.n_cpu)
+    partial_bidirectional_align = partial(bidirectional_align, args=args)
+    i_res_align = p.imap(partial_bidirectional_align, zip(src_predictions, tgt_predictions, src_words, tgt_words), len(src_text)//args.n_cpu)
     src_to_tgt = []
     for r in tqdm(i_res_align, total=len(src_text), desc="Bidirectional alignment"):
         src_to_tgt.append(r)
@@ -277,14 +276,14 @@ if __name__ == "__main__":
         required=True,
         help="Path to pretrained model or model identifier from huggingface.co/models",
     )
-    parser.add_argument("--src_tokenizer_lang", type=str, default=None, help="Language of the SpaCy tokenizer to use.")
-    parser.add_argument("--tgt_tokenizer_lang", type=str, default=None, help="Language of the SpaCy tokenizer to use.")
     parser.add_argument("--no_cuda", action="store_true", help="Whether not to use CUDA when available")
     parser.add_argument("--src_file", type=str, default=None, help="Source text to align.")
     parser.add_argument("--tgt_file", type=str, default=None, help="Target text to align.")
     parser.add_argument("--save_to_dir", type=str, default=None, required=True, help="Directory to save alignments.")
     parser.add_argument("--batch_size", type=int, default=8, help="Batch size for inference.")
     parser.add_argument("--n_cpu", type=int, default=8, help="Number of CPUs to use for tokenization.")
+    parser.add_argument("--threshold", type=float, default=0.5, help="Threshold for alignment score.")
+    parser.add_argument("--force_bidirectional", action="store_true", help="Force bidirectional alignment.")
     args = parser.parse_args()
 
     args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -292,7 +291,11 @@ if __name__ == "__main__":
     src_texts, tgt_texts = load_data(args.src_file, args.tgt_file)
 
     # SpaCy tokenizer
-    src_tokenizer, tgt_tokenizer, src_lang, tgt_lang = get_tokenizer(args, src_texts[0], tgt_texts[0])
+    src_lang = args.src_file.split('/')[-1].split('.')[-1]
+    tgt_lang = args.tgt_file.split('/')[-1].split('.')[-1]
+    src_tokenizer, tgt_tokenizer = get_tokenizer(src_lang, tgt_lang)
+    print("Source tokenizer: {}".format(src_tokenizer))
+    print("Target tokenizer: {}".format(tgt_tokenizer))
 
     # use question-answering pipeline for prediction
     pipe = pipeline("question-answering", model=args.model_name_or_path, device=args.device)
@@ -303,15 +306,13 @@ if __name__ == "__main__":
         os.makedirs(args.save_to_dir)
     src_tag = args.src_file.split('/')[-3]
     tgt_tag = args.tgt_file.split('/')[-3]
-    src_lang = args.src_file.split('/')[-1].split('.')[-1]
-    tgt_lang = args.tgt_file.split('/')[-1].split('.')[-1]
-    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     save_to_file = "{}_{}_{}_{}_{}.txt".format(src_tag, src_lang, tgt_tag, tgt_lang, timestamp)
     args.save_to_file = os.path.join(args.save_to_dir, save_to_file)
     if os.path.exists(args.save_to_file):
         raise ValueError("File {} already exists.".format(args.save_to_file))
     with open(args.save_to_file, 'w') as f:
         for aligned_pair in aligned_pairs:
-            f.write("{}\t{}\t{}".format(aligned_pair.src_text, aligned_pair.tgt_text, aligned_pair.aligned_score))
+            f.write("{}\t{}\t{}\t{}\t{}".format(aligned_pair.src_text, aligned_pair.tgt_text, aligned_pair.src_to_tgt_score, aligned_pair.tgt_to_src_score, aligned_pair.aligned_score))
             f.write('\n')
     print("Done.")
