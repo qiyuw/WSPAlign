@@ -44,7 +44,7 @@ python $PROJECT_DIR/run_spanpred.py \
     --data_dir $OUTPUT_DIR/{lang}-{lr}-{bz} \
     --output_dir $OUTPUT_DIR/{lang}-{lr}-{bz} \
     --overwrite_output_dir \
-    --save_steps 10000000 \ # don't save checkpoints
+    --save_steps 10000000 \
     --thread 4 2>&1 \
     --per_gpu_eval_batch_size 12 \
     --logging_steps 500 \

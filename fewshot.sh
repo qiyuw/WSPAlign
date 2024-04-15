@@ -30,7 +30,7 @@ python $PROJECT_DIR/run_spanpred.py \
     --do_train \
     --do_eval \
     --eval_all_checkpoints \
-    --train_file $TRAIN_FILE/{lang}_dev.json \
+    --train_file $TRAIN_FILE/{lang}_few.json \
     --predict_file $TEST_FILE/{lang}_test.json \
     --learning_rate {lr} \
     --per_gpu_train_batch_size {bz} \
@@ -52,4 +52,4 @@ python $PROJECT_DIR/run_spanpred.py \
 rm $OUTPUT_DIR/{lang}-{lr}-{bz}/checkpoint*
 rm $OUTPUT_DIR/{lang}-{lr}-{bz}/cached*
 " \
--p lang kftt deen enfr roen -p lr 1e-6 3e-6 1e-5 3e-5 -p bz 5 8 12 | simple_gpu_scheduler --gpus 0, 1, 2,3,4,5,6,7,8
+-p lang kftt deen enfr roen -p lr 1e-6 3e-6 1e-5 3e-5 -p bz 5 8 12 | simple_gpu_scheduler --gpus 0,1,2,3,4,5,6,7
